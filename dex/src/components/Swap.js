@@ -12,7 +12,7 @@ function Swap() {
   const [slippage, setSlippage] = useState(2.5); //value of slippage as default
   const [tokenOneAmount, setTokenOneAmount] = useState(null);
   const [tokenTwoAmount, setTokenTwoAmount] = useState(null);
-  const [tokenOne, setTokenOne] = useState(tokenList[2]);
+  const [tokenOne, setTokenOne] = useState(tokenList[0]);
   const [tokenTwo, setTokenTwo] = useState(tokenList[1]);
   const [isOpen, setIsOpen] = useState(false);
   const [changeToken, setChangeToken] = useState(1);
@@ -25,13 +25,22 @@ function Swap() {
 
   function changeAmount(e) {
     setTokenOneAmount(e.target.value);
+    if (e.target.value && prices) {
+      setTokenTwoAmount((e.target.value * prices.ratio).toFixed(2))
+    } else {
+      setTokenTwoAmount(null);
+    }
   }
 
   function switchTokens() {
+    setPrices(null);
+    setTokenOneAmount(null);
+    setTokenTwoAmount(null);
     const one = tokenOne;
     const two = tokenTwo;
     setTokenOne(two);
     setTokenTwo(one);
+    fetchPrices(two.address, one.address);
   }
 
   function openModal(asset) {
@@ -40,24 +49,34 @@ function Swap() {
   }
 
   function modifyToken(i) {
-    if (changeToken == 1) {
+    setPrices(null);
+    setTokenOneAmount(null);
+    setTokenTwoAmount(null);
+    if (changeToken === 1) {
       setTokenOne(tokenList[i]);
+      fetchPrices(tokenList[i].address, tokenTwo.address)
     } else {
       setTokenTwo(tokenList[i]);
+      fetchPrices(tokenOne.address, tokenList[i].address)
     }
     setIsOpen(false); //closing modal after we choosed token
   }
 
 
-  async function fetchPrices(one, two) {
+  async function fetchPrices(one, two){
+
     const res = await axios.get(`http://localhost:3001/tokenPrice`, {
       params: {addressOne: one, addressTwo: two}
+    }).catch(function(error) {
+      console.log(error);
     });
+
     console.log(res.data)
     setPrices(res.data)
   }
 
-  useEffect(() => {
+  useEffect(()=>{
+
     fetchPrices(tokenList[0].address, tokenList[1].address)
 
   }, [])
@@ -121,6 +140,7 @@ function Swap() {
             placeholder="0"
             value={tokenOneAmount}
             onChange={changeAmount}
+            disabled={!prices}
           />
           <Input placeholder="0" value={tokenTwoAmount} disabled={true} />
           <div className="switchButton" onClick={switchTokens}>
@@ -138,6 +158,7 @@ function Swap() {
             <DownOutlined />
           </div>
         </div>
+        <div className="swapButton" disabled={!tokenOneAmount}>Swap</div>
       </div>
     </>
   );
