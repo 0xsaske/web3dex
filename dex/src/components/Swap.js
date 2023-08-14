@@ -6,6 +6,7 @@ import {
   SettingOutlined,
 } from "@ant-design/icons";
 import tokenList from "../tokenList.json";
+import axios from "axios";
 
 function Swap() {
   const [slippage, setSlippage] = useState(2.5); //value of slippage as default
@@ -15,6 +16,7 @@ function Swap() {
   const [tokenTwo, setTokenTwo] = useState(tokenList[1]);
   const [isOpen, setIsOpen] = useState(false);
   const [changeToken, setChangeToken] = useState(1);
+  const [prices, setPrices] = useState(null);
 
   //function getting slippage whats user choice
   function handleSlippageChange(e) {
@@ -45,6 +47,20 @@ function Swap() {
     }
     setIsOpen(false); //closing modal after we choosed token
   }
+
+
+  async function fetchPrices(one, two) {
+    const res = await axios.get(`http://localhost:3001/tokenPrice`, {
+      params: {addressOne: one, addressTwo: two}
+    });
+    console.log(res.data)
+    setPrices(res.data)
+  }
+
+  useEffect(() => {
+    fetchPrices(tokenList[0].address, tokenList[1].address)
+
+  }, [])
 
   const settings = (
     <>
