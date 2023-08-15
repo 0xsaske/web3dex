@@ -22,9 +22,7 @@ return (
           <Route path="/" element={<Swap isConnected={isConnected} address={address} />} />
           <Route path="/tokens" element={<Tokens />} />
         </Routes>
-
       </div>
-
     </div>
   ) 
 }
